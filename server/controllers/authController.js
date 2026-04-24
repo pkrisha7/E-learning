@@ -38,3 +38,28 @@ exports.forgotPassword = async(req, res) => {
     });
     res.json({ message: 'Reset email sent' });
 };
+exports.updateProfile = async(req, res) => {
+    try {
+        const { name, email } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.user._id, { name, email }, { new: true }
+        ).select('-password');
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.changePassword = async(req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.user._id);
+        if (!(await user.matchPassword(currentPassword)))
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        user.password = newPassword;
+        await user.save();
+        res.json({ message: 'Password changed successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
