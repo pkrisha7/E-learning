@@ -17,5 +17,5 @@ router.post('/', protect, createCourse);
 router.put('/:id', protect, updateCourse);
 router.delete('/:id', protect, deleteCourse);
 router.post('/:courseId/enroll', protect, enrollInCourse);
-
+router.put('/:courseId/progress/:lessonId', protect, require('../controllers/courseController').markLessonComplete);
 module.exports = router;

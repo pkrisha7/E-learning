@@ -26,16 +26,24 @@ export default function CourseDetail() {
   }, [id, user]);
 
   const handleEnroll = async () => {
-    if (!user) { navigate('/login'); return; }
-    setEnrolling(true);
-    try {
+  if (!user) { navigate('/login'); return; }
+  setEnrolling(true);
+  try {
+    if (course.isFree) {
       await axios.post(`http://localhost:5000/api/courses/${id}/enroll`, {}, authHeaders());
       toast.success('Enrolled successfully!');
       setEnrolled(true);
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Enrollment failed');
-    } finally { setEnrolling(false); }
-  };
+    } else {
+      const res = await axios.post(
+        `http://localhost:5000/api/payments/checkout/${id}`, {},
+        authHeaders()
+      );
+      if (res.data.url) window.location.href = res.data.url;
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Enrollment failed');
+  } finally { setEnrolling(false); }
+};
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">

@@ -15,6 +15,8 @@ import AdminDashboard  from './pages/admin/AdminDashboard';
 import ManageCourses   from './pages/admin/ManageCourses';
 import ManageUsers     from './pages/admin/ManageUsers';
 import ManageQuizzes   from './pages/admin/ManageQuizzes';
+import Landing         from './pages/Landing';
+import PaymentSuccess  from './pages/PaymentSuccess';
 
 const ProtectedRoute = ({ children, adminOnly }) => {
   const { user } = useAuth();
@@ -30,27 +32,28 @@ export default function App() {
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <Routes>
           {/* Public */}
-          <Route path="/login"           element={<Login />} />
-          <Route path="/register"        element={<Register />} />
+          <Route path="/"              element={<Landing />} />
+          <Route path="/login"         element={<Login />} />
+          <Route path="/register"      element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/courses"         element={<CourseList />} />
-          <Route path="/courses/:id"     element={<CourseDetail />} />
+          <Route path="/courses"       element={<CourseList />} />
+          <Route path="/courses/:id"   element={<CourseDetail />} />
 
           {/* Student protected */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/profile"   element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/dashboard"     element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile"       element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           <Route path="/learn/:courseId/lesson/:lessonId" element={<ProtectedRoute><VideoPlayer /></ProtectedRoute>} />
           <Route path="/quiz/:courseId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
 
           {/* Admin protected */}
-          <Route path="/admin"          element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/courses"  element={<ProtectedRoute adminOnly><ManageCourses /></ProtectedRoute>} />
-          <Route path="/admin/users"    element={<ProtectedRoute adminOnly><ManageUsers /></ProtectedRoute>} />
-          <Route path="/admin/quizzes"  element={<ProtectedRoute adminOnly><ManageQuizzes /></ProtectedRoute>} />
+          <Route path="/admin"         element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute adminOnly><ManageCourses /></ProtectedRoute>} />
+          <Route path="/admin/users"   element={<ProtectedRoute adminOnly><ManageUsers /></ProtectedRoute>} />
+          <Route path="/admin/quizzes" element={<ProtectedRoute adminOnly><ManageQuizzes /></ProtectedRoute>} />
 
-          {/* Redirects */}
-          <Route path="/"  element={<Navigate to="/courses" />} />
-          <Route path="*"  element={<Navigate to="/courses" />} />
+          {/* Catch all — must be last */}
+          <Route path="*" element={<Navigate to="/courses" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
