@@ -10,15 +10,18 @@ export default function Login() {
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    try {
-      const res = await login(data);
-      loginUser(res.data.token, res.data.user);
-      toast.success('Welcome back!');
-      navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
-    }
-  };
+  try {
+    const res = await login(data);
+    loginUser(res.data.token, res.data.user);
+    toast.success('Welcome back!');
+    const role = res.data.user.role;
+    if (role === 'admin') navigate('/admin');
+    else if (role === 'instructor') navigate('/tutor');
+    else navigate('/dashboard');
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Login failed');
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">

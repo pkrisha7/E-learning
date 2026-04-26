@@ -14,8 +14,9 @@ exports.protect = async(req, res, next) => {
     }
 };
 
+// Admin OR tutor (instructor) can access
 exports.adminOnly = (req, res, next) => {
-    if (req.user && req.user.role !== 'admin')
-        return res.status(403).json({ message: 'Admin access only' });
-    next();
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'instructor'))
+        return next();
+    res.status(403).json({ message: 'Tutor or Admin access only' });
 };

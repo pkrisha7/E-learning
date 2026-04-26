@@ -15,13 +15,16 @@ import AdminDashboard  from './pages/admin/AdminDashboard';
 import ManageCourses   from './pages/admin/ManageCourses';
 import ManageUsers     from './pages/admin/ManageUsers';
 import ManageQuizzes   from './pages/admin/ManageQuizzes';
+import TutorDashboard  from './pages/tutor/TutorDashboard';
 import Landing         from './pages/Landing';
 import PaymentSuccess  from './pages/PaymentSuccess';
 
-const ProtectedRoute = ({ children, adminOnly }) => {
+const ProtectedRoute = ({ children, adminOnly, tutorOnly }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" />;
+  if (tutorOnly && user.role !== 'instructor' && user.role !== 'admin')
+    return <Navigate to="/dashboard" />;
   return children;
 };
 
@@ -39,20 +42,25 @@ export default function App() {
           <Route path="/courses"       element={<CourseList />} />
           <Route path="/courses/:id"   element={<CourseDetail />} />
 
-          {/* Student protected */}
+          {/* Student */}
           <Route path="/dashboard"     element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile"       element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           <Route path="/learn/:courseId/lesson/:lessonId" element={<ProtectedRoute><VideoPlayer /></ProtectedRoute>} />
           <Route path="/quiz/:courseId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
 
-          {/* Admin protected */}
+          {/* Tutor */}
+          <Route path="/tutor"         element={<ProtectedRoute tutorOnly><TutorDashboard /></ProtectedRoute>} />
+          <Route path="/tutor/courses" element={<ProtectedRoute tutorOnly><ManageCourses /></ProtectedRoute>} />
+          <Route path="/tutor/quizzes" element={<ProtectedRoute tutorOnly><ManageQuizzes /></ProtectedRoute>} />
+
+          {/* Admin */}
           <Route path="/admin"         element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute adminOnly><ManageCourses /></ProtectedRoute>} />
           <Route path="/admin/users"   element={<ProtectedRoute adminOnly><ManageUsers /></ProtectedRoute>} />
           <Route path="/admin/quizzes" element={<ProtectedRoute adminOnly><ManageQuizzes /></ProtectedRoute>} />
 
-          {/* Catch all — must be last */}
+          {/* Catch all */}
           <Route path="*" element={<Navigate to="/courses" />} />
         </Routes>
       </BrowserRouter>

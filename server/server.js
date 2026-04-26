@@ -8,22 +8,21 @@ connectDB();
 
 const app = express();
 
+// These MUST come before routes
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://your-frontend.onrender.com'
-    ],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true
 }));
-// Routes
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes AFTER middleware
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Error handler
 app.use(require('./middleware/errorMiddleware'));
 
 app.listen(process.env.PORT, () =>
