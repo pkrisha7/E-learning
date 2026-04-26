@@ -8,9 +8,14 @@ connectDB();
 
 const app = express();
 
-app.use(cors({ origin: '*', credentials: false }));
-app.use(express.json());
-
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://your-frontend.onrender.com'
+    ],
+    credentials: true
+}));
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
