@@ -8,15 +8,19 @@ connectDB();
 
 const app = express();
 
-// These MUST come before routes
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://e-learning-9shw.onrender.com',
+        process.env.CLIENT_URL,
+    ].filter(Boolean),
     credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes AFTER middleware
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
@@ -25,6 +29,5 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 
 app.use(require('./middleware/errorMiddleware'));
 
-app.listen(process.env.PORT, () =>
-    console.log(`Server running on port ${process.env.PORT}`)
-);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
