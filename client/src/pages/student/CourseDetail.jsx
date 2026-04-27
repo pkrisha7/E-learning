@@ -4,6 +4,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 export default function CourseDetail() {
@@ -17,8 +18,8 @@ export default function CourseDetail() {
 
   useEffect(() => {
     Promise.all([
-      axios.get(`http://localhost:5000/api/courses/${id}`),
-      user ? axios.get('http://localhost:5000/api/courses/my-enrollments', authHeaders()).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
+      axios.get(`${API}/courses/${id}`),
+      user ? axios.get(`${API}/courses/my-enrollments`, authHeaders()).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
     ]).then(([courseRes, enrollRes]) => {
       setCourse(courseRes.data);
       setEnrolled(enrollRes.data.some(e => e.course?._id === id || e.course === id));
@@ -26,24 +27,26 @@ export default function CourseDetail() {
   }, [id, user]);
 
   const handleEnroll = async () => {
-  if (!user) { navigate('/login'); return; }
-  setEnrolling(true);
-  try {
-    if (course.isFree) {
-      await axios.post(`http://localhost:5000/api/courses/${id}/enroll`, {}, authHeaders());
-      toast.success('Enrolled successfully!');
-      setEnrolled(true);
-    } else {
-      const res = await axios.post(
-        `http://localhost:5000/api/payments/checkout/${id}`, {},
-        authHeaders()
-      );
-      if (res.data.url) window.location.href = res.data.url;
-    }
-  } catch (e) {
-    toast.error(e.response?.data?.message || 'Enrollment failed');
-  } finally { setEnrolling(false); }
-};
+    if (!user) { navigate('/login'); return; }
+    setEnrolling(true);
+    try {
+      if (course.isFree) {
+        await axios.post(`${API}/courses/${id}/enroll`, {}, authHeaders());
+        toast.success('Enrolled successfully!');
+        setEnrolled(true);
+      } else {
+        const res = await axios.post(`${API}/payments/checkout/${id}`, {}, authHeaders());
+        if (res.data.free) {
+          toast.success('Enrolled successfully!');
+          setEnrolled(true);
+        } else if (res.data.url) {
+          window.location.href = res.data.url;
+        }
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Enrollment failed');
+    } finally { setEnrolling(false); }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -103,11 +106,14 @@ export default function CourseDetail() {
             ) : (
               <div className="space-y-2">
                 {course.lessons?.map((lesson, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition
-                    ${enrolled || lesson.freePreview ? 'border-purple-100 bg-purple-50 cursor-pointer hover:bg-purple-100' : 'border-gray-100 bg-gray-50'}`}
+                  <div key={i}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition
+                      ${enrolled || lesson.freePreview
+                        ? 'border-purple-100 bg-purple-50 cursor-pointer hover:bg-purple-100'
+                        : 'border-gray-100 bg-gray-50'}`}
                     onClick={() => {
-                      if (enrolled) navigate(`/learn/${course._id}/lesson/${lesson._id}`);
-                      else if (lesson.freePreview) navigate(`/learn/${course._id}/lesson/${lesson._id}`);
+                      if (enrolled || lesson.freePreview)
+                        navigate(`/learn/${course._id}/lesson/${lesson._id}`);
                     }}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
@@ -116,7 +122,9 @@ export default function CourseDetail() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800 truncate">{lesson.title}</p>
-                      {lesson.description && <p className="text-xs text-gray-400 truncate">{lesson.description}</p>}
+                      {lesson.description && (
+                        <p className="text-xs text-gray-400 truncate">{lesson.description}</p>
+                      )}
                     </div>
                     {lesson.freePreview && !enrolled && (
                       <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full shrink-0">Free</span>
@@ -132,7 +140,8 @@ export default function CourseDetail() {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-6">
             {course.thumbnail && (
-              <img src={course.thumbnail} alt={course.title} className="w-full h-40 object-cover rounded-xl mb-4"/>
+              <img src={course.thumbnail} alt={course.title}
+                className="w-full h-40 object-cover rounded-xl mb-4"/>
             )}
             <div className="text-3xl font-bold text-gray-900 mb-1">
               {course.isFree ? 'Free' : `$${course.price}`}
