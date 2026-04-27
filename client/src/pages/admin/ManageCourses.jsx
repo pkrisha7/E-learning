@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 const empty = { title: '', description: '', category: '', level: 'beginner', price: 0, isFree: false, thumbnail: '', isPublished: false };
 
@@ -17,7 +18,7 @@ export default function ManageCourses() {
   });
 
   const load = () =>
-    axios.get('http://localhost:5000/api/admin/courses', authHeaders())
+    axios.get(`${API}/admin/courses`, authHeaders())
       .then(res => setCourses(res.data));
 
   useEffect(() => { load(); }, []);
@@ -28,10 +29,10 @@ export default function ManageCourses() {
     }
     try {
       if (editing) {
-        await axios.put(`http://localhost:5000/api/courses/${editing}`, form, authHeaders());
+        await axios.put(`${API}/courses/${editing}`, form, authHeaders());
         toast.success('Course updated ✅');
       } else {
-        await axios.post('http://localhost:5000/api/courses', form, authHeaders());
+        await axios.post(`${API}/courses`, form, authHeaders());
         toast.success('Course created ✅');
       }
       setForm(empty); setEditing(null); setShowForm(false); load();
@@ -39,13 +40,13 @@ export default function ManageCourses() {
   };
 
   const togglePublish = async (id) => {
-    await axios.put(`http://localhost:5000/api/admin/courses/${id}/toggle`, {}, authHeaders());
+    await axios.put(`${API}/admin/courses/${id}/toggle`, {}, authHeaders());
     toast.success('Visibility updated'); load();
   };
 
   const deleteCourse = async (id) => {
     if (!confirm('Delete this course? This cannot be undone.')) return;
-    await axios.delete(`http://localhost:5000/api/admin/courses/${id}`, authHeaders());
+    await axios.delete(`${API}/admin/courses/${id}`, authHeaders());
     toast.success('Course deleted'); load();
   };
 
@@ -56,7 +57,7 @@ export default function ManageCourses() {
     try {
       const course  = courses.find(c => c._id === courseId);
       const updated = { ...course, lessons: [...(course.lessons || []), lessonForm] };
-      await axios.put(`http://localhost:5000/api/courses/${courseId}`, updated, authHeaders());
+      await axios.put(`${API}/courses/${courseId}`, updated, authHeaders());
       toast.success('Lesson added ✅');
       setAddingLesson(null);
       setLessonForm({ title: '', videoUrl: '', description: '', freePreview: false });
@@ -68,11 +69,10 @@ export default function ManageCourses() {
     if (!confirm('Delete this lesson?')) return;
     const course  = courses.find(c => c._id === courseId);
     const lessons = course.lessons.filter((_, i) => i !== lessonIndex);
-    await axios.put(`http://localhost:5000/api/courses/${courseId}`, { ...course, lessons }, authHeaders());
+    await axios.put(`${API}/courses/${courseId}`, { ...course, lessons }, authHeaders());
     toast.success('Lesson deleted'); load();
   };
 
-  // Extract YouTube video ID from any YouTube URL format
   const getYouTubeId = (url) => {
     if (!url) return null;
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
@@ -83,8 +83,6 @@ export default function ManageCourses() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* Navbar */}
       <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <Link to="/admin" className="text-xl font-bold text-purple-600">← Admin</Link>
         <button
@@ -185,7 +183,6 @@ export default function ManageCourses() {
                     value={lessonForm.title}
                     onChange={e => setLessonForm({...lessonForm, title: e.target.value})}/>
                 </div>
-
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">YouTube URL *</label>
                   <input className={inp}
@@ -197,7 +194,6 @@ export default function ManageCourses() {
                   </p>
                 </div>
 
-                {/* Live YouTube preview */}
                 {lessonForm.videoUrl && getYouTubeId(lessonForm.videoUrl) && (
                   <div>
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Preview</label>
@@ -271,11 +267,7 @@ export default function ManageCourses() {
 
           {courses.map(course => (
             <div key={course._id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-
-              {/* Course header */}
               <div className="p-5 flex flex-col md:flex-row items-start gap-4">
-
-                {/* Left — thumbnail + info */}
                 <div className="flex gap-4 items-start flex-1 min-w-0">
                   {course.thumbnail ? (
                     <img src={course.thumbnail} alt={course.title}
@@ -301,7 +293,6 @@ export default function ManageCourses() {
                   </div>
                 </div>
 
-                {/* Right — action buttons stacked vertically */}
                 <div className="flex flex-row md:flex-col gap-2 flex-wrap shrink-0">
                   <button onClick={() => togglePublish(course._id)}
                     className="text-xs px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition text-gray-600 font-medium">
@@ -332,7 +323,6 @@ export default function ManageCourses() {
                 </div>
               </div>
 
-              {/* Lessons list */}
               {course.lessons?.length > 0 && (
                 <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
@@ -340,34 +330,25 @@ export default function ManageCourses() {
                   </p>
                   <div className="space-y-2">
                     {course.lessons.map((lesson, i) => (
-                      <div key={i}
-                        className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-gray-100">
+                      <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-gray-100">
                         <span className="w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold shrink-0">
                           {i + 1}
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800 truncate">{lesson.title}</p>
                           {lesson.videoUrl && (
-                            <p className="text-xs text-purple-400 truncate mt-0.5">
-                              🎬 {lesson.videoUrl}
-                            </p>
+                            <p className="text-xs text-purple-400 truncate mt-0.5">🎬 {lesson.videoUrl}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {lesson.freePreview && (
-                            <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
-                              Free
-                            </span>
+                            <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">Free</span>
                           )}
                           {getYouTubeId(lesson.videoUrl) && (
-                            <span className="text-xs bg-red-100 text-red-500 px-2 py-0.5 rounded-full">
-                              ▶ YouTube
-                            </span>
+                            <span className="text-xs bg-red-100 text-red-500 px-2 py-0.5 rounded-full">▶ YouTube</span>
                           )}
                           <button onClick={() => deleteLesson(course._id, i)}
-                            className="text-xs text-red-400 hover:text-red-600 transition ml-1 font-bold">
-                            ✕
-                          </button>
+                            className="text-xs text-red-400 hover:text-red-600 transition ml-1 font-bold">✕</button>
                         </div>
                       </div>
                     ))}
