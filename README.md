@@ -136,22 +136,46 @@ The frontend will be accessible at `http://localhost:3000`.
 | POST   | `/api/auth/register`      | Register a new user     |
 | POST   | `/api/auth/login`         | Log in and receive JWT  |
 
-### Courses
+### Courses & Enrollment
 
 | Method | Endpoint                  | Description                      |
 |--------|---------------------------|----------------------------------|
 | GET    | `/api/courses`            | Retrieve all available courses   |
 | GET    | `/api/courses/:id`        | Get details of a specific course |
-| POST   | `/api/courses`            | Create a new course (instructor) |
-| PUT    | `/api/courses/:id`        | Update a course                  |
+| GET    | `/api/courses/my-enrollments` | List all enrolled courses for current user |
+| POST   | `/api/courses`            | Create a new course (instructor/admin) |
+| PUT    | `/api/courses/:id`        | Update course details            |
 | DELETE | `/api/courses/:id`        | Delete a course                  |
+| POST   | `/api/courses/:courseId/enroll` | Direct enrollment in a course |
+| PUT    | `/api/courses/:courseId/progress/:lessonId` | Mark lesson as complete |
 
-### Enrollment
+### Quizzes
 
-| Method | Endpoint                        | Description                        |
-|--------|---------------------------------|------------------------------------|
-| POST   | `/api/enroll/:courseId`         | Enroll the current user in a course|
-| GET    | `/api/enroll/my-courses`        | List all enrolled courses for user |
+| Method | Endpoint                  | Description                      |
+|--------|---------------------------|----------------------------------|
+| GET    | `/api/quizzes/course/:courseId` | Retrieve quiz for a specific course |
+| POST   | `/api/quizzes`            | Create a new quiz (instructor/admin) |
+| PUT    | `/api/quizzes/:id`        | Update quiz details              |
+| DELETE | `/api/quizzes/:id`        | Delete a quiz                    |
+
+### Payments (Stripe Checkout)
+
+| Method | Endpoint                  | Description                      |
+|--------|---------------------------|----------------------------------|
+| POST   | `/api/payments/checkout/:courseId` | Create a Stripe checkout session |
+| POST   | `/api/payments/success`   | Process successful payment & enroll student |
+
+### Admin Panel
+
+| Method | Endpoint                  | Description                      |
+|--------|---------------------------|----------------------------------|
+| GET    | `/api/admin/stats`        | Get platform stats (users, courses, revenue) |
+| GET    | `/api/admin/users`        | List all user accounts           |
+| PUT    | `/api/admin/users/:id/role` | Update role of a specific user   |
+| DELETE | `/api/admin/users/:id`    | Delete a user account            |
+| GET    | `/api/admin/courses`      | List all courses (published & unpublished) |
+| PUT    | `/api/admin/courses/:id/toggle` | Toggle course publish status |
+| DELETE | `/api/admin/courses/:id`  | Delete any course admin-side     |
 
 > All protected endpoints require a valid `Authorization: Bearer <token>` header.
 
