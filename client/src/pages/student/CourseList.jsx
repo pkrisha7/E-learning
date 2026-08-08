@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Logo from '../../components/Logo';
+import { useAuth } from '../../context/AuthContext';
+
+import SettingsDropdown from '../../components/SettingsDropdown';
 
 const CATEGORIES = ['All', 'Web Development', 'Data Science', 'Design', 'Business', 'Marketing', 'Photography'];
 const LEVELS     = ['All', 'beginner', 'intermediate', 'advanced'];
 
 export default function CourseList() {
+  const { user }                  = useAuth();
   const [courses, setCourses]     = useState([]);
   const [search, setSearch]       = useState('');
   const [category, setCategory]   = useState('All');
@@ -31,107 +36,136 @@ export default function CourseList() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-theme-bg text-slate-900">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">L</div>
-          <span className="text-xl font-bold text-gray-900">LearnHub</span>
-        </Link>
-        <div className="flex gap-3">
-          <Link to="/login"    className="text-sm text-gray-600 hover:text-purple-600">Login</Link>
-          <Link to="/register" className="text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700">Sign up</Link>
+      <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <Logo size="md" />
+
+        <div className="flex items-center gap-4">
+          {user ? (
+            <SettingsDropdown />
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors px-2">Login</Link>
+              <Link to="/register" className="text-sm bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-4 py-2 rounded-xl font-bold hover:shadow-md hover:shadow-sky-500/20 transition-all">
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
       {/* Search Hero */}
-      <div className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white py-14 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-3">Find your next course</h1>
-          <p className="text-purple-200 mb-8">Learn from the best instructors in the world</p>
+      <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white py-16 px-6 relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-3 tracking-tight">Find Your Next Skill</h1>
+          <p className="text-sky-200/80 text-base md:text-lg mb-8">Discover top-rated online courses led by industry experts</p>
+
           <div className="relative">
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search for anything..."
-              className="w-full px-6 py-4 rounded-2xl text-gray-900 text-lg focus:outline-none shadow-xl"
+              placeholder="Search courses, topics, or keywords..."
+              className="w-full px-6 py-4 pr-12 rounded-2xl bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:outline-none focus:ring-4 focus:ring-sky-500/40 shadow-xl border border-slate-200"
             />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl">🔍</span>
+            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">🔍</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          {/* Category */}
-          <div className="flex gap-2 flex-wrap">
-            {CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => setCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition border
-                  ${category === cat ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'}`}>
-                {cat}
-              </button>
-            ))}
-          </div>
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        {/* Category Pills */}
+        <div className="flex flex-wrap gap-2.5 mb-6">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                category === cat
+                  ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-sm shadow-sky-500/25'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:border-sky-300 hover:text-sky-600'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-8 items-center">
-          {/* Level */}
-          <select value={level} onChange={e => setLevel(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white">
-            {LEVELS.map(l => <option key={l} value={l}>{l === 'All' ? 'All Levels' : l.charAt(0).toUpperCase() + l.slice(1)}</option>)}
-          </select>
+        {/* Level and Price Filters */}
+        <div className="flex flex-wrap gap-3 mb-8 items-center justify-between bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+          <div className="flex flex-wrap gap-3 items-center">
+            <select
+              value={level}
+              onChange={e => setLevel(e.target.value)}
+              className="border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
+            >
+              {LEVELS.map(l => <option key={l} value={l}>{l === 'All' ? 'All Skill Levels' : l.charAt(0).toUpperCase() + l.slice(1)}</option>)}
+            </select>
 
-          {/* Price */}
-          <select value={priceFilter} onChange={e => setPrice(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white">
-            <option value="All">All Prices</option>
-            <option value="Free">Free</option>
-            <option value="Paid">Paid</option>
-          </select>
+            <select
+              value={priceFilter}
+              onChange={e => setPrice(e.target.value)}
+              className="border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50"
+            >
+              <option value="All">All Prices</option>
+              <option value="Free">Free Courses</option>
+              <option value="Paid">Premium Courses</option>
+            </select>
+          </div>
 
-          <span className="text-sm text-gray-400 ml-auto">{filtered.length} course{filtered.length !== 1 ? 's' : ''} found</span>
+          <span className="text-xs font-bold text-slate-400">{filtered.length} course{filtered.length !== 1 ? 's' : ''} available</span>
         </div>
 
         {/* Course Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1,2,3,4,5,6].map(i => <div key={i} className="bg-gray-200 rounded-2xl h-64 animate-pulse"/>)}
+            {[1,2,3,4,5,6].map(i => <div key={i} className="bg-slate-200 rounded-2xl h-64 animate-pulse"/>)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🔍</div>
-            <p className="text-gray-500 text-lg mb-2">No courses found</p>
-            <p className="text-gray-400 text-sm">Try adjusting your search or filters</p>
-            <button onClick={() => { setSearch(''); setCategory('All'); setLevel('All'); setPrice('All'); }}
-              className="mt-4 text-purple-600 font-medium hover:underline text-sm">
-              Clear all filters
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-slate-800 text-xl font-bold mb-2">No matching courses found</p>
+            <p className="text-slate-500 text-sm mb-4">Try searching with a different term or resetting filters</p>
+            <button
+              onClick={() => { setSearch(''); setCategory('All'); setLevel('All'); setPrice('All'); }}
+              className="text-sky-600 font-bold hover:underline text-sm"
+            >
+              Clear all search filters
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map(course => (
-              <Link key={course._id} to={`/courses/${course._id}`}
-                className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition group">
-                {course.thumbnail ? (
-                  <img src={course.thumbnail} alt={course.title} className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"/>
-                ) : (
-                  <div className="w-full h-44 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-5xl">📚</div>
-                )}
-                <div className="p-5">
-                  <div className="flex gap-2 mb-2 flex-wrap">
-                    <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{course.category}</span>
-                    <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full capitalize">{course.level}</span>
+              <Link
+                key={course._id}
+                to={`/courses/${course._id}`}
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between"
+              >
+                <div>
+                  {course.thumbnail ? (
+                    <img src={course.thumbnail} alt={course.title} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"/>
+                  ) : (
+                    <div className="w-full h-44 bg-gradient-to-tr from-sky-100 to-cyan-100 flex items-center justify-center text-5xl">📚</div>
+                  )}
+
+                  <div className="p-5">
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-100 px-2.5 py-0.5 rounded-full">{course.category}</span>
+                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full capitalize">{course.level}</span>
+                    </div>
+
+                    <h3 className="font-bold text-slate-900 text-base mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors leading-snug">{course.title}</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">{course.description}</p>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 group-hover:text-purple-700 transition">{course.title}</h3>
-                  <p className="text-sm text-gray-400 line-clamp-2 mb-3">{course.description}</p>
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                    <span className="text-xs text-gray-400">📚 {course.lessons?.length || 0} lessons</span>
-                    <span className={`font-bold ${course.isFree ? 'text-green-600' : 'text-gray-900'}`}>
-                      {course.isFree ? 'Free' : `$${course.price}`}
-                    </span>
-                  </div>
+                </div>
+
+                <div className="px-5 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-400">📖 {course.lessons?.length || 0} Lessons</span>
+                  <span className={`text-base font-extrabold ${course.isFree ? 'text-emerald-600' : 'text-slate-900'}`}>
+                    {course.isFree ? 'Free' : `Rs. ${course.price.toLocaleString('en-IN')}`}
+                  </span>
                 </div>
               </Link>
             ))}

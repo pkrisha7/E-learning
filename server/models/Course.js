@@ -20,7 +20,7 @@ const courseSchema = new mongoose.Schema({
     lessons: [lessonSchema],
     enrolledCount: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },
-    isPublished: { type: Boolean, default: false },
+    isPublished: { type: Boolean, default: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Course', courseSchema);

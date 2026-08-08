@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import Logo from '../../components/Logo';
+import SettingsDropdown from '../../components/SettingsDropdown';
 
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/courses/my-enrollments', authHeaders())
@@ -18,60 +20,67 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const isNewUser = sessionStorage.getItem('isNewUser') === 'true';
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-theme-bg text-slate-900">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-purple-600">LearnHub</h1>
-        <div className="flex items-center gap-5">
-          <Link to="/courses" className="text-sm text-gray-600 hover:text-purple-600">Browse Courses</Link>
-          <Link to="/profile" className="text-sm text-gray-600 hover:text-purple-600">Profile</Link>
-          {user?.role === 'admin' && (
-            <Link to="/admin" className="text-sm text-purple-600 font-medium hover:underline">Admin Panel</Link>
-          )}
-          <button onClick={handleLogout} className="text-sm text-red-400 hover:text-red-600 transition">Logout</button>
-        </div>
+      <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <Logo size="md" />
+        <SettingsDropdown />
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-10">
-        {/* Welcome */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white mb-10">
-          <h2 className="text-3xl font-bold mb-1">Welcome back, {user?.name?.split(' ')[0]}! 👋</h2>
-          <p className="text-purple-200">You have {enrollments.length} course{enrollments.length !== 1 ? 's' : ''} in progress.</p>
+        {/* Welcome Hero Card */}
+        <div className="bg-gradient-to-r from-sky-600 via-cyan-500 to-indigo-600 rounded-3xl p-8 md:p-10 text-white shadow-xl shadow-sky-500/15 mb-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-2">
+              {isNewUser
+                ? `Welcome, let's get started, ${user?.name?.split(' ')[0]}! 👋`
+                : `Welcome back, ${user?.name?.split(' ')[0]}! 👋`}
+            </h2>
+            <p className="text-sky-100 text-base md:text-lg">
+              You have <strong className="text-white font-bold">{enrollments.length}</strong> active course{enrollments.length !== 1 ? 's' : ''} in progress. Keep up the momentum!
+            </p>
+          </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
           {[
-            { label: 'Enrolled',   value: enrollments.length,                                    icon: '📚', color: 'bg-purple-50 text-purple-700' },
-            { label: 'Completed',  value: enrollments.filter(e => e.completedAt).length,          icon: '✅', color: 'bg-green-50 text-green-700' },
-            { label: 'In Progress',value: enrollments.filter(e => !e.completedAt).length,         icon: '▶️', color: 'bg-blue-50 text-blue-700' },
-            { label: 'Certificates',value: enrollments.filter(e => e.certificate).length,         icon: '🎓', color: 'bg-amber-50 text-amber-700' },
+            { label: 'Enrolled',    value: enrollments.length,                                   icon: '📚', bg: 'bg-sky-50 border-sky-100 text-sky-700' },
+            { label: 'Completed',   value: enrollments.filter(e => e.completedAt).length,         icon: '✅', bg: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
+            { label: 'In Progress', value: enrollments.filter(e => !e.completedAt).length,        icon: '▶️', bg: 'bg-cyan-50 border-cyan-100 text-cyan-700' },
+            { label: 'Certificates',value: enrollments.filter(e => e.certificate).length,        icon: '🎓', bg: 'bg-indigo-50 border-indigo-100 text-indigo-700' },
           ].map(s => (
-            <div key={s.label} className={`rounded-2xl p-5 ${s.color}`}>
+            <div key={s.label} className={`rounded-2xl p-5 border shadow-xs ${s.bg}`}>
               <div className="text-2xl mb-2">{s.icon}</div>
-              <div className="text-2xl font-bold">{s.value}</div>
-              <div className="text-sm opacity-70 mt-1">{s.label}</div>
+              <div className="text-3xl font-extrabold">{s.value}</div>
+              <div className="text-xs font-semibold uppercase tracking-wider opacity-75 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* My Courses */}
-        <h3 className="text-xl font-bold text-gray-900 mb-4">My Courses</h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-extrabold text-slate-900">My Courses</h3>
+          <Link to="/courses" className="text-sky-600 hover:text-sky-700 font-bold text-sm transition-colors">
+            Explore All Courses →
+          </Link>
+        </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1,2,3].map(i => <div key={i} className="bg-gray-200 rounded-2xl h-52 animate-pulse"/>)}
+            {[1,2,3].map(i => <div key={i} className="bg-slate-200 rounded-2xl h-60 animate-pulse"/>)}
           </div>
         ) : enrollments.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-sm">
-            <div className="text-5xl mb-4">📚</div>
-            <p className="text-gray-500 text-lg mb-2">No courses yet</p>
-            <p className="text-gray-400 text-sm mb-6">Start learning by browsing our course catalog</p>
-            <Link to="/courses" className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-              Browse Courses
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+            <div className="text-6xl mb-4">📚</div>
+            <p className="text-slate-800 text-xl font-bold mb-2">No enrolled courses yet</p>
+            <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">Discover top-rated video courses and start building your future skills today.</p>
+            <Link to="/courses" className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-7 py-3.5 rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-sky-500/25 transition-all">
+              Browse Course Catalog
             </Link>
           </div>
         ) : (
@@ -81,37 +90,41 @@ export default function Dashboard() {
               const completed = progress?.filter(p => p.completed).length || 0;
               const pct       = total > 0 ? Math.round((completed / total) * 100) : 0;
               return (
-                <div key={_id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
-                  {course?.thumbnail ? (
-                    <img src={course.thumbnail} alt={course.title} className="w-full h-36 object-cover"/>
-                  ) : (
-                    <div className="w-full h-36 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-4xl">📚</div>
-                  )}
-                  <div className="p-5">
-                    <h4 className="font-semibold text-gray-900 mb-1 truncate">{course?.title}</h4>
-                    <p className="text-xs text-gray-400 mb-3">{course?.lessons?.length || 0} lessons</p>
+                <div key={_id} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col justify-between">
+                  <div>
+                    {course?.thumbnail ? (
+                      <img src={course.thumbnail} alt={course.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"/>
+                    ) : (
+                      <div className="w-full h-40 bg-gradient-to-tr from-sky-100 to-cyan-100 flex items-center justify-center text-4xl">📚</div>
+                    )}
+                    <div className="p-5">
+                      <h4 className="font-bold text-slate-900 text-base mb-1 line-clamp-1 group-hover:text-sky-600 transition-colors">{course?.title}</h4>
+                      <p className="text-xs text-slate-400 font-medium mb-4">{course?.lessons?.length || 0} Lessons</p>
 
-                    {/* Progress bar */}
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>Progress</span>
-                        <span>{pct}%</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }}/>
+                      {/* Progress Bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
+                          <span>Overall Progress</span>
+                          <span className="text-sky-600">{pct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div className="bg-gradient-to-r from-sky-500 to-cyan-400 h-2 rounded-full transition-all duration-500" style={{ width: `${pct}%` }}/>
+                        </div>
                       </div>
                     </div>
+                  </div>
 
+                  <div className="px-5 pb-5">
                     {completedAt ? (
-                      <span className="inline-block text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full font-medium">
-                        ✅ Completed
+                      <span className="w-full block text-center text-xs bg-emerald-100 text-emerald-700 py-2.5 rounded-xl font-bold">
+                        ✅ Course Completed
                       </span>
                     ) : (
                       <Link
                         to={`/learn/${course?._id}/lesson/${course?.lessons?.[0]?._id}`}
-                        className="block text-center bg-purple-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition"
+                        className="block text-center bg-gradient-to-r from-sky-500 via-cyan-500 to-indigo-600 text-white py-2.5 rounded-xl text-sm font-bold hover:shadow-md hover:shadow-sky-500/25 transition-all"
                       >
-                        {pct > 0 ? 'Continue' : 'Start Learning'}
+                        {pct > 0 ? 'Continue Lesson →' : 'Start Learning →'}
                       </Link>
                     )}
                   </div>
@@ -120,13 +133,6 @@ export default function Dashboard() {
             })}
           </div>
         )}
-
-        {/* Browse more */}
-        <div className="mt-10 text-center">
-          <Link to="/courses" className="text-purple-600 font-medium hover:underline text-sm">
-            Browse more courses →
-          </Link>
-        </div>
       </div>
     </div>
   );

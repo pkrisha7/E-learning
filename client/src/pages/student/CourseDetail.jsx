@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../../components/Logo';
+
+import SettingsDropdown from '../../components/SettingsDropdown';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
@@ -49,49 +52,53 @@ export default function CourseDetail() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"/>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
   if (!course) return (
-    <div className="min-h-screen flex items-center justify-center text-gray-400">Course not found</div>
+    <div className="min-h-screen flex items-center justify-center text-slate-400 bg-slate-50">Course not found</div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen page-theme-bg text-slate-900">
       {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <Link to="/courses" className="text-xl font-bold text-purple-600">LearnHub</Link>
+      <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <Logo size="md" />
+
         <div className="flex gap-4 items-center">
           {user ? (
-            <>
-              <Link to="/dashboard" className="text-sm text-gray-600 hover:text-purple-600">Dashboard</Link>
-              <span className="text-sm font-medium text-gray-700">{user.name}</span>
-            </>
+            <SettingsDropdown />
           ) : (
             <>
-              <Link to="/login"    className="text-sm text-gray-600 hover:text-purple-600">Login</Link>
-              <Link to="/register" className="text-sm bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700">Sign up</Link>
+              <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">Login</Link>
+              <Link to="/register" className="text-sm bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-4 py-2 rounded-xl font-bold hover:shadow-md hover:shadow-sky-500/20 transition-all">
+                Sign Up
+              </Link>
             </>
           )}
         </div>
       </nav>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-purple-700 to-indigo-800 text-white py-14 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-xs bg-white/20 px-3 py-1 rounded-full">{course.category}</span>
-            <span className="text-xs bg-white/20 px-3 py-1 rounded-full capitalize">{course.level}</span>
-            {course.isFree && <span className="text-xs bg-green-400/30 px-3 py-1 rounded-full">Free</span>}
+      <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white py-16 px-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="flex flex-wrap gap-2.5 mb-4">
+            <span className="text-xs font-bold bg-sky-500/30 text-sky-200 border border-sky-400/30 px-3 py-1 rounded-full">{course.category}</span>
+            <span className="text-xs font-bold bg-slate-700/60 text-slate-300 px-3 py-1 rounded-full capitalize">{course.level}</span>
+            {course.isFree && <span className="text-xs font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full">Free</span>}
           </div>
-          <h1 className="text-4xl font-bold mb-3 max-w-2xl">{course.title}</h1>
-          <p className="text-purple-200 max-w-2xl mb-6">{course.description}</p>
-          <div className="flex flex-wrap gap-6 text-sm text-purple-200">
-            <span>👨‍🏫 {course.instructor?.name}</span>
-            <span>📚 {course.lessons?.length || 0} lessons</span>
-            <span>👥 {course.enrolledCount || 0} students</span>
+
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 max-w-3xl leading-tight tracking-tight">{course.title}</h1>
+          <p className="text-sky-100/80 max-w-3xl mb-6 text-base leading-relaxed">{course.description}</p>
+
+          <div className="flex flex-wrap gap-6 text-xs md:text-sm font-medium text-sky-200/90 border-t border-slate-800/80 pt-4">
+            <span>👨‍🏫 Instructor: <strong className="text-white font-bold">{course.instructor?.name}</strong></span>
+            <span>📚 Lessons: <strong className="text-white font-bold">{course.lessons?.length || 0}</strong></span>
+            <span>👥 Enrolled Students: <strong className="text-white font-bold">{course.enrolledCount || 0}</strong></span>
           </div>
         </div>
       </div>
@@ -99,35 +106,42 @@ export default function CourseDetail() {
       <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left — Curriculum */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Course Curriculum</h2>
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-7">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-5">Course Curriculum</h2>
             {course.lessons?.length === 0 ? (
-              <p className="text-gray-400 text-sm">No lessons added yet.</p>
+              <p className="text-slate-400 text-sm italic">No lessons added yet.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {course.lessons?.map((lesson, i) => (
-                  <div key={i}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition
-                      ${enrolled || lesson.freePreview
-                        ? 'border-purple-100 bg-purple-50 cursor-pointer hover:bg-purple-100'
-                        : 'border-gray-100 bg-gray-50'}`}
+                  <div
+                    key={i}
+                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                      enrolled || lesson.freePreview
+                        ? 'border-sky-200 bg-sky-50/50 cursor-pointer hover:bg-sky-100/60'
+                        : 'border-slate-200/70 bg-slate-50/60'
+                    }`}
                     onClick={() => {
                       if (enrolled || lesson.freePreview)
                         navigate(`/learn/${course._id}/lesson/${lesson._id}`);
                     }}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
-                      ${enrolled ? 'bg-purple-200 text-purple-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
+                        enrolled ? 'bg-sky-500 text-white shadow-xs' : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
                       {enrolled ? '▶' : lesson.freePreview ? '▶' : '🔒'}
                     </div>
+
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{lesson.title}</p>
+                      <p className="text-sm font-bold text-slate-800 truncate">{lesson.title}</p>
                       {lesson.description && (
-                        <p className="text-xs text-gray-400 truncate">{lesson.description}</p>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{lesson.description}</p>
                       )}
                     </div>
+
                     {lesson.freePreview && !enrolled && (
-                      <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full shrink-0">Free</span>
+                      <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full shrink-0">Free Preview</span>
                     )}
                   </div>
                 ))}
@@ -138,20 +152,20 @@ export default function CourseDetail() {
 
         {/* Right — Enrollment Card */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-6">
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 sticky top-24">
             {course.thumbnail && (
-              <img src={course.thumbnail} alt={course.title}
-                className="w-full h-40 object-cover rounded-xl mb-4"/>
+              <img src={course.thumbnail} alt={course.title} className="w-full h-44 object-cover rounded-2xl mb-5"/>
             )}
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {course.isFree ? 'Free' : `$${course.price}`}
+
+            <div className="text-3xl font-extrabold text-slate-900 mb-1">
+              {course.isFree ? 'Free' : `Rs. ${course.price.toLocaleString('en-IN')}`}
             </div>
-            <p className="text-sm text-gray-400 mb-5">Full lifetime access</p>
+            <p className="text-xs font-semibold text-slate-400 mb-6 uppercase tracking-wider">Full Lifetime Access Included</p>
 
             {enrolled ? (
               <button
                 onClick={() => navigate(`/learn/${course._id}/lesson/${course.lessons?.[0]?._id}`)}
-                className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition mb-3"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3.5 rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all mb-4"
               >
                 Continue Learning →
               </button>
@@ -159,17 +173,17 @@ export default function CourseDetail() {
               <button
                 onClick={handleEnroll}
                 disabled={enrolling}
-                className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50 mb-3"
+                className="w-full bg-gradient-to-r from-sky-500 via-cyan-500 to-indigo-600 text-white py-3.5 rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-sky-500/25 transition-all disabled:opacity-50 mb-4"
               >
-                {enrolling ? 'Enrolling...' : course.isFree ? 'Enroll Free' : `Enroll for $${course.price}`}
+                {enrolling ? 'Enrolling...' : course.isFree ? 'Enroll Free Now' : `Enroll for Rs. ${course.price.toLocaleString('en-IN')}`}
               </button>
             )}
 
-            <div className="space-y-2 text-sm text-gray-500 mt-4">
-              <div className="flex items-center gap-2"><span>📚</span> {course.lessons?.length || 0} lessons</div>
-              <div className="flex items-center gap-2"><span>🎯</span> <span className="capitalize">{course.level} level</span></div>
-              <div className="flex items-center gap-2"><span>♾️</span> Lifetime access</div>
-              <div className="flex items-center gap-2"><span>📱</span> Access on any device</div>
+            <div className="space-y-3 text-xs font-medium text-slate-600 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-2.5"><span>📚</span> {course.lessons?.length || 0} Video Lessons</div>
+              <div className="flex items-center gap-2.5"><span>🎯</span> <span className="capitalize">{course.level} Level</span></div>
+              <div className="flex items-center gap-2.5"><span>♾️</span> Lifetime Access</div>
+              <div className="flex items-center gap-2.5"><span>📱</span> Access on Mobile & Desktop</div>
             </div>
           </div>
         </div>

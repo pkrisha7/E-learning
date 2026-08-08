@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import Logo from '../../components/Logo';
 
 export default function Profile() {
   const { user, loginUser } = useAuth();
@@ -24,75 +25,88 @@ export default function Profile() {
   };
 
   const changePassword = async () => {
-    if (pwForm.newPassword.length < 6) { toast.error('Min 6 characters'); return; }
+    if (pwForm.newPassword.length < 6) { toast.error('Minimum 6 characters required'); return; }
     try {
       await axios.put('http://localhost:5000/api/auth/change-password', pwForm, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      toast.success('Password changed!');
+      toast.success('Password changed successfully!');
       setPwForm({ currentPassword: '', newPassword: '' });
     } catch (e) {
       toast.error(e.response?.data?.message || 'Failed to change password');
     }
   };
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400';
+  const inputStyle = 'w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-slate-50/50 focus:bg-white transition-all';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <Link to="/dashboard" className="text-xl font-bold text-purple-600">← Dashboard</Link>
+    <div className="min-h-screen page-theme-bg text-slate-900">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <Logo size="md" />
+        <Link to="/dashboard" className="text-sm font-bold text-sky-600 hover:text-sky-700 transition-colors">
+          ← Back to Dashboard
+        </Link>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
-        <h2 className="text-3xl font-bold text-gray-900">My Profile</h2>
+        <h2 className="text-3xl font-extrabold text-slate-900">Account Settings</h2>
 
-        {/* Avatar */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold shrink-0">
+        {/* User Card */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-7 flex items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-cyan-400 to-indigo-600 text-white flex items-center justify-center text-2xl font-extrabold shadow-md shadow-sky-500/20 shrink-0">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-gray-900 text-lg">{user?.name}</p>
-            <p className="text-gray-400 text-sm">{user?.email}</p>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block
-              ${user?.role === 'admin' ? 'bg-red-100 text-red-600' : user?.role === 'instructor' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
-              {user?.role}
+            <p className="font-extrabold text-slate-900 text-xl">{user?.name}</p>
+            <p className="text-slate-500 text-xs font-medium">{user?.email}</p>
+            <span className={`text-[11px] font-extrabold px-3 py-0.5 rounded-full mt-2 inline-block capitalize ${
+              user?.role === 'admin'
+                ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                : user?.role === 'instructor'
+                ? 'bg-cyan-100 text-cyan-700 border border-cyan-200'
+                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+            }`}>
+              Role: {user?.role}
             </span>
           </div>
         </div>
 
-        {/* Edit profile */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-          <h3 className="font-bold text-gray-900 text-lg">Edit Profile</h3>
+        {/* Edit Profile */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-7 space-y-5">
+          <h3 className="font-extrabold text-slate-900 text-lg">Personal Information</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-            <input className={inp} value={form.name} onChange={e => setForm({...form, name: e.target.value})}/>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Full Name</label>
+            <input className={inputStyle} value={form.name} onChange={e => setForm({...form, name: e.target.value})}/>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input className={inp} type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}/>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address</label>
+            <input className={inputStyle} type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}/>
           </div>
-          <button onClick={updateProfile} disabled={saving}
-            className="bg-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Changes'}
+          <button
+            onClick={updateProfile}
+            disabled={saving}
+            className="bg-gradient-to-r from-sky-500 via-cyan-500 to-indigo-600 text-white px-7 py-3 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-sky-500/25 transition-all disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Profile Changes'}
           </button>
         </div>
 
-        {/* Change password */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-          <h3 className="font-bold text-gray-900 text-lg">Change Password</h3>
+        {/* Change Password */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-7 space-y-5">
+          <h3 className="font-extrabold text-slate-900 text-lg">Security & Password</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current password</label>
-            <input className={inp} type="password" value={pwForm.currentPassword} onChange={e => setPwForm({...pwForm, currentPassword: e.target.value})}/>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Current Password</label>
+            <input className={inputStyle} type="password" value={pwForm.currentPassword} onChange={e => setPwForm({...pwForm, currentPassword: e.target.value})}/>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
-            <input className={inp} type="password" value={pwForm.newPassword} onChange={e => setPwForm({...pwForm, newPassword: e.target.value})}/>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">New Password</label>
+            <input className={inputStyle} type="password" value={pwForm.newPassword} onChange={e => setPwForm({...pwForm, newPassword: e.target.value})}/>
           </div>
-          <button onClick={changePassword}
-            className="bg-gray-800 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-gray-900 transition">
-            Change Password
+          <button
+            onClick={changePassword}
+            className="bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 rounded-xl font-bold text-sm transition-all"
+          >
+            Update Password
           </button>
         </div>
       </div>

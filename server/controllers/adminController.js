@@ -31,18 +31,43 @@ exports.updateUserRole = async(req, res) => {
 };
 
 exports.getAllCoursesAdmin = async(req, res) => {
-    const courses = await Course.find().populate('instructor', 'name email').sort({ createdAt: -1 });
-    res.json(courses);
+    try {
+        let filter = {};
+        if (req.user.role === 'instructor') {
+            filter.instructor = req.user._id;
+        }
+        const courses = await Course.find(filter).populate('instructor', 'name email').sort({ createdAt: -1 });
+        res.json(courses);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
 exports.togglePublish = async(req, res) => {
-    const course = await Course.findById(req.params.id);
-    course.isPublished = !course.isPublished;
-    await course.save();
-    res.json(course);
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+        if (req.user.role === 'instructor' && course.instructor.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+        course.isPublished = !course.isPublished;
+        await course.save();
+        res.json(course);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
 exports.deleteCourseAdmin = async(req, res) => {
-    await Course.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Course deleted' });
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+        if (req.user.role === 'instructor' && course.instructor.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+        await Course.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Course deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };

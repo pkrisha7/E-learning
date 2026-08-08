@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const generateToken = (id) =>
-    jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+    jwt.sign({ id }, process.env.JWT_SECRET || 'dev_secret_key', { expiresIn: process.env.JWT_EXPIRE || '30d' });
 
 exports.register = async(req, res) => {
     try {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import Logo from '../../components/Logo';
 
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
@@ -52,9 +53,9 @@ export default function VideoPlayer() {
       );
       setEnrollment(res.data);
       setCompleted(true);
-      toast.success('Lesson complete! ✅');
-    } catch {
-      toast.error('Failed to mark complete');
+      toast.success('Lesson marked complete! ✅');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to mark complete');
     }
   };
 
@@ -68,7 +69,7 @@ export default function VideoPlayer() {
     if (idx < course.lessons.length - 1) {
       goToLesson(course.lessons[idx + 1]);
     } else {
-      toast('You finished all lessons! 🎉');
+      toast('You finished all lessons! 🎉 Take the course quiz to test your skills.');
       navigate(`/quiz/${courseId}`);
     }
   };
@@ -81,31 +82,35 @@ export default function VideoPlayer() {
     : 0;
 
   if (!course || !current) return (
-    <div className="flex items-center justify-center h-screen bg-gray-950">
-      <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"/>
+    <div className="flex items-center justify-center h-screen bg-slate-950 text-white">
+      <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"/>
     </div>
   );
 
   const youtubeId = getYouTubeId(current.videoUrl);
 
   return (
-    <div className="flex h-screen bg-gray-950 text-white overflow-hidden">
-
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 bg-gray-900 flex flex-col shrink-0 border-r border-gray-800">
-        <div className="p-4 border-b border-gray-800">
-          <Link to="/dashboard" className="text-purple-400 text-xs hover:underline block mb-2">
+      <aside className="w-80 bg-slate-900 flex flex-col shrink-0 border-r border-slate-800">
+        <div className="p-5 border-b border-slate-800">
+          <div className="mb-3">
+            <Logo size="sm" variant="dark" />
+          </div>
+          <Link to="/dashboard" className="text-sky-400 text-xs font-semibold hover:underline block mb-2">
             ← Back to Dashboard
           </Link>
-          <h2 className="font-semibold text-sm text-white truncate">{course.title}</h2>
+          <h2 className="font-bold text-sm text-slate-100 truncate">{course.title}</h2>
           <div className="mt-3">
-            <div className="flex justify-between text-xs text-gray-400 mb-1">
-              <span>Progress</span>
-              <span>{progress}%</span>
+            <div className="flex justify-between text-xs font-bold text-slate-400 mb-1">
+              <span>Overall Progress</span>
+              <span className="text-sky-400">{progress}%</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div className="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${progress}%` }}/>
+            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-sky-500 to-cyan-400 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
         </div>
@@ -116,14 +121,27 @@ export default function VideoPlayer() {
             const isDone    = completedIds.has(lesson._id);
             const isCurrent = current._id === lesson._id;
             return (
-              <button key={lesson._id} onClick={() => goToLesson(lesson)}
-                className={`w-full text-left px-4 py-3 text-sm transition flex items-start gap-3
-                  ${isCurrent ? 'bg-purple-900/40 border-l-2 border-purple-500' : 'hover:bg-gray-800 border-l-2 border-transparent'}`}>
-                <span className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 font-bold
-                  ${isDone ? 'bg-green-500 text-white' : isCurrent ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-400'}`}>
+              <button
+                key={lesson._id}
+                onClick={() => goToLesson(lesson)}
+                className={`w-full text-left px-4 py-3.5 text-xs font-medium transition-all flex items-start gap-3 ${
+                  isCurrent
+                    ? 'bg-sky-500/15 border-l-4 border-sky-400 text-white'
+                    : 'hover:bg-slate-800/60 border-l-4 border-transparent text-slate-400'
+                }`}
+              >
+                <span
+                  className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 font-bold ${
+                    isDone
+                      ? 'bg-emerald-500 text-white shadow-xs'
+                      : isCurrent
+                      ? 'bg-sky-500 text-white shadow-xs'
+                      : 'bg-slate-800 text-slate-400'
+                  }`}
+                >
                   {isDone ? '✓' : i + 1}
                 </span>
-                <span className={`truncate leading-5 ${isCurrent ? 'text-white' : 'text-gray-300'}`}>
+                <span className={`truncate leading-5 font-semibold ${isCurrent ? 'text-white' : 'text-slate-300'}`}>
                   {lesson.title}
                 </span>
               </button>
@@ -132,19 +150,20 @@ export default function VideoPlayer() {
         </div>
 
         {/* Quiz button */}
-        <div className="p-4 border-t border-gray-800">
-          <button onClick={() => navigate(`/quiz/${courseId}`)}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
-            📝 Take Quiz
+        <div className="p-4 border-t border-slate-800">
+          <button
+            onClick={() => navigate(`/quiz/${courseId}`)}
+            className="w-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white py-3 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-cyan-500/20 transition-all"
+          >
+            📝 Take Course Quiz
           </button>
         </div>
       </aside>
 
-      {/* Main area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* Video */}
-        <div className="w-full bg-black" style={{ aspectRatio: '16/9', maxHeight: '70vh' }}>
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-slate-950">
+        {/* Video Player Box */}
+        <div className="w-full bg-black flex items-center justify-center" style={{ aspectRatio: '16/9', maxHeight: '72vh' }}>
           {youtubeId ? (
             <iframe
               key={current._id}
@@ -166,37 +185,43 @@ export default function VideoPlayer() {
               onEnded={markComplete}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">
+            <div className="w-full h-full flex items-center justify-center text-slate-500">
               <div className="text-center">
                 <div className="text-5xl mb-3">🎬</div>
-                <p>No video URL for this lesson</p>
+                <p className="text-slate-400 font-medium">No video content configured for this lesson</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Lesson info */}
-        <div className="flex-1 overflow-y-auto bg-gray-950 p-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
+        {/* Lesson Info Header & Controls */}
+        <div className="flex-1 overflow-y-auto bg-slate-950 p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap max-w-6xl mx-auto">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-white mb-1 truncate">{current.title}</h1>
+              <h1 className="text-2xl font-bold text-white mb-2 truncate">{current.title}</h1>
               {current.description && (
-                <p className="text-gray-400 text-sm leading-relaxed">{current.description}</p>
+                <p className="text-slate-400 text-sm leading-relaxed max-w-3xl">{current.description}</p>
               )}
             </div>
+
             <div className="flex gap-3 shrink-0 flex-wrap">
               {completed ? (
-                <span className="bg-green-900/40 text-green-400 px-4 py-2 rounded-xl text-sm font-semibold border border-green-800">
+                <span className="bg-emerald-950/60 text-emerald-400 px-4 py-2.5 rounded-xl text-xs font-bold border border-emerald-800/80 flex items-center gap-1.5">
                   ✅ Completed
                 </span>
               ) : (
-                <button onClick={markComplete}
-                  className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition">
+                <button
+                  onClick={markComplete}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs"
+                >
                   ✓ Mark Complete
                 </button>
               )}
-              <button onClick={nextLesson}
-                className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
+
+              <button
+                onClick={nextLesson}
+                className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:shadow-md hover:shadow-cyan-500/20 transition-all"
+              >
                 Next Lesson →
               </button>
             </div>

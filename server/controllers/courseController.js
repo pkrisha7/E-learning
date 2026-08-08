@@ -18,8 +18,13 @@ exports.getCourseById = async(req, res) => {
 };
 
 exports.createCourse = async(req, res) => {
-    const course = await Course.create({...req.body, instructor: req.user._id });
-    res.status(201).json(course);
+    try {
+        const isPublished = req.body.isPublished !== undefined ? req.body.isPublished : true;
+        const course = await Course.create({ ...req.body, isPublished, instructor: req.user._id });
+        res.status(201).json(course);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };
 
 exports.updateCourse = async(req, res) => {
@@ -51,7 +56,10 @@ exports.markLessonComplete = async(req, res) => {
     try {
         const { courseId, lessonId } = req.params;
         let enrollment = await Enrollment.findOne({ user: req.user._id, course: courseId });
-        if (!enrollment) return res.status(404).json({ message: 'Not enrolled' });
+        if (!enrollment) {
+            enrollment = await Enrollment.create({ user: req.user._id, course: courseId });
+            await Course.findByIdAndUpdate(courseId, { $inc: { enrolledCount: 1 } });
+        }
 
         const existing = enrollment.progress.find(p => p.lessonId && p.lessonId.toString() === lessonId);
         if (existing) {
